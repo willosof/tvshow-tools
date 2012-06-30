@@ -37,6 +37,8 @@ while(my $item = readdir DIR) {
 					}
 					closedir $filehandle;
 				} elsif ($seasonfolder =~ /^tvshow\.nfo$/) {
+				
+				} elsif ($seasonfolder =~ /^season-specials\.tbn$/) {
 
 				} elsif ($seasonfolder =~ /^fanart\.jpg$/) {
 				
