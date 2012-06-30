@@ -1,0 +1,59 @@
+#!/usr/bin/perl -w
+# file-flags <tv-dir>
+
+use strict;
+use Data::Dumper;
+
+die "./unwanted-files <tv-dir>" unless defined $ARGV[0];
+
+
+my $base_dir = $ARGV[0];
+
+if (!-d $base_dir) {
+	die "No such dir";	
+}
+chdir($base_dir);
+
+opendir DIR, ".";
+my @rename = ();
+
+while(my $item = readdir DIR) {
+	if ($item !~ /^\./) {
+		if (-d $item) {
+			opendir(my $seasonhandle, $item);
+			while(my $seasonfolder = readdir $seasonhandle) {
+				if ($seasonfolder =~ /^Season (\d+)$/i) {
+					opendir(my $filehandle, $item."/".$seasonfolder);
+					FILE: while (my $filename = readdir $filehandle) {
+						next FILE if ($filename =~ /^\./);
+						my $fpath = $item."/".$seasonfolder."/".$filename;
+						if (-f $fpath) {
+							if ($fpath =~ /^(.+) - (\d+)x(\d+) - (.+)\.([a-z0-9]{3,})$/) {
+							
+							} else {
+								print "elsefpath: $fpath \n";
+							}
+						}
+					}
+					closedir $filehandle;
+				} else {
+					print "Seasonfolder File: $seasonfolder \n";
+				}
+			}
+			closedir $seasonhandle;
+		}
+	}
+}
+
+sub multitrim {
+	my @r = ();
+	for my $i (@_) {
+		$i =~ s/^\s+//gs;
+		$i =~ s/\s+$//gs;
+		$i =~ s/\s+-+\s+$//gs;
+		push @r, $i;
+	}
+	return @r;
+}
+
+closedir DIR;
