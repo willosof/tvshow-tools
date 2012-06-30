@@ -1,0 +1,115 @@
+#!/usr/bin/perl -w
+# file-flags <tv-dir>
+
+use strict;
+use Data::Dumper;
+
+die "./file-flags <tv-dir>" unless defined $ARGV[0];
+
+my $base_dir = $ARGV[0];
+
+if (!-d $base_dir) {
+	die "No such dir";	
+}
+chdir($base_dir);
+
+opendir DIR, ".";
+my @rename = ();
+
+while(my $item = readdir DIR) {
+	if ($item !~ /^\./) {
+		if (-d $item) {
+			opendir(my $seasonhandle, $item);
+			while(my $seasonfolder = readdir $seasonhandle) {
+				if ($seasonfolder =~ /^Season (\d+)$/i) {
+					opendir(my $filehandle, $item."/".$seasonfolder);
+					FILE: while (my $filename = readdir $filehandle) {
+						next FILE if ($filename =~ /^\./);
+						my $fpath = $item."/".$seasonfolder."/".$filename;
+						if (-f $fpath) {
+							if ($fpath =~ /^(.+) - (\d+)x(\d+) - (.+)\.([a-z0-9]{3,})$/) {
+								my ($show,$season,$episode,$epname,$ext) = ($1,$2,$3,$4,$5);
+								($show,$season,$episode,$epname,$ext) = multitrim($show,$season,$episode,$epname,$ext);
+
+								print $fpath."\n";
+								print "  - show:    $show \n";
+								print "  - season:  $season \n";
+								print "  - episode: $episode \n";
+								print "  - ext:     $ext \n";
+
+								my @flags = ();
+								my $subst = 0;
+								my @lookfor = qw/SD WEB-DL SD HD AC3 720p 1080p 480p 576p DivX XviD h264 x264 wmv DVD/;
+
+								foreach my $lookfor (@lookfor) {
+									$subst++;
+									if ($epname =~ s/ ($lookfor)\b//i) {
+										push @flags, $1;
+									}
+								}
+
+								if ($subst) {
+									$epname =~ s/\s+-\s*$//;
+								}
+
+								print "  - epname:  $epname \n";
+
+								if (scalar @flags) {
+									print "  - epflag:  '".join("','",@flags)."' \n";
+								}
+
+								my $sfpath = $fpath;
+								$sfpath =~ s/'/\\'/g;
+
+								my $filef = `file '$sfpath'`;
+								$filef =~ s/^([^:]+):\s*//si;
+								my %fla = ();
+								foreach (@flags) {
+									$fla{$_}=1;
+								}
+								print "  - file..:  $filef \n";
+								$fla{'XviD'}=1 if ($filef =~ /XviD/);
+								$fla{'DivX'}=1 if ($filef =~ /DivX/);
+								$fla{'DivX'}=1 if ($filef =~ /DivX/);
+								$fla{'480p'}=1 if ($filef =~ /720 x 480/);
+								$fla{'576p'}=1 if ($filef =~ /720 x 576/);
+								if ($filef =~ /1280 x 720/) {
+									$fla{'720p'}=1;
+								}
+								if ($filef =~ /1920 x 1080/) {
+									$fla{'1080p'}=1;
+								}
+								my $to;
+
+								print "From: $fpath\n";
+								if (scalar keys %fla) {
+									$to = "$show - ".$season."x".$episode." - " . $epname . " - " . join(" ",sort keys %fla) . ".".$ext;
+								}
+								else {
+									$to = "$show - ".$season."x".$episode." - " . $epname . ".".$ext;
+								}
+								print "To..: $to \n";
+								print "\n";
+							}
+						}
+					}
+					closedir $filehandle;
+				}
+			}
+			closedir $seasonhandle;
+		}
+	}
+}
+
+sub multitrim {
+	my @r = ();
+	for my $i (@_) {
+		$i =~ s/^\s+//gs;
+		$i =~ s/\s+$//gs;
+		$i =~ s/\s+-+\s+$//gs;
+		push @r, $i;
+	}
+	return @r;
+}
+
+closedir DIR;
