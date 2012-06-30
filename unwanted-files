@@ -43,7 +43,9 @@ while(my $item = readdir DIR) {
 				} elsif ($seasonfolder =~ /^fanart\.jpg$/) {
 				
 				} elsif ($seasonfolder =~ /^season\d+\.tbn$/) {
-					
+				
+				} elsif ($seasonfolder =~ /^\.\.?$/) {				
+	
 				} else {
 					print "Seasonfolder File: $seasonfolder \n";
 				}
