@@ -5,7 +5,7 @@ use strict;
 use Data::Dumper;
 
 die "./unwanted-files <tv-dir>" unless defined $ARGV[0];
-
+our @unlink;
 
 my $base_dir = $ARGV[0];
 
@@ -31,12 +31,17 @@ while(my $item = readdir DIR) {
 							if ($fpath =~ /^(.+) - (\d+)x(\d+)(-\d+)* - (.+)\.([a-z0-9]{3,})$/i) {
 							
 							} else {
-								print "elsefpath: $fpath \n";
+								print "Delete_file: $fpath";
+								queue_unlink($fpath);
 							}
 						}
 					}
+
 					closedir $filehandle;
+
 				} elsif ($seasonfolder =~ /^tvshow\.nfo$/) {
+
+				} elsif ($seasonfolder =~ /^folder\.jpg$/) {
 				
 				} elsif ($seasonfolder =~ /^season-specials\.tbn$/) {
 
@@ -47,7 +52,14 @@ while(my $item = readdir DIR) {
 				} elsif ($seasonfolder =~ /^\.\.?$/) {				
 	
 				} else {
-					print "Seasonfolder File: $seasonfolder \n";
+					my $spath = $item."/".$seasonfolder;
+					if (-f $spath) {
+						print "Delete_file: $spath\n";
+						queue_unlink($spath);
+					}
+					else {
+						print STDERR "Not deleting directory: $spath\n";
+					}
 				}
 			}
 			closedir $seasonhandle;
@@ -67,3 +79,24 @@ sub multitrim {
 }
 
 closedir DIR;
+
+
+
+print Dumper \@unlink;
+print "FILES FOR DELETION. CTRL+C TO CANCEL\n";
+
+getc(STDIN);
+
+foreach my $path (@unlink) {
+	print "DELETING $path\n";
+	unlink $path or die "Cant delete $path: $!";
+}
+
+
+
+
+sub queue_unlink {
+	my ($path) = @_;
+	push @unlink, $path;
+
+}
