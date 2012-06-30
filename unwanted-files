@@ -28,7 +28,7 @@ while(my $item = readdir DIR) {
 						next FILE if ($filename =~ /^\./);
 						my $fpath = $item."/".$seasonfolder."/".$filename;
 						if (-f $fpath) {
-							if ($fpath =~ /^(.+) - (\d+)x(\d+) - (.+)\.([a-z0-9]{3,})$/) {
+							if ($fpath =~ /^(.+) - (\d+)x(\d+)(-\d+)? - (.+)\.([a-z0-9]{3,})$/) {
 							
 							} else {
 								print "elsefpath: $fpath \n";
@@ -36,6 +36,12 @@ while(my $item = readdir DIR) {
 						}
 					}
 					closedir $filehandle;
+				} elsif ($seasonfolder =~ /^tvshow\.nfo$/) {
+
+				} elsif ($seasonfolder =~ /^fanart\.jpg$/) {
+				
+				} elsif ($seasonfolder =~ /^season\d+\.tbn$/) {
+					
 				} else {
 					print "Seasonfolder File: $seasonfolder \n";
 				}
