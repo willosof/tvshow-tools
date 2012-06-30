@@ -28,7 +28,7 @@ while(my $item = readdir DIR) {
 						next FILE if ($filename =~ /^\./);
 						my $fpath = $item."/".$seasonfolder."/".$filename;
 						if (-f $fpath) {
-							if ($fpath =~ /^(.+) - (\d+)x(\d+)(-\d+)? - (.+)\.([a-z0-9]{3,})$/) {
+							if ($fpath =~ /^(.+) - (\d+)x(\d+)(-\d+)? - (.+)\.([a-z0-9]{3,})$/i) {
 							
 							} else {
 								print "elsefpath: $fpath \n";
